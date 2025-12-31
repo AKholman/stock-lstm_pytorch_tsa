@@ -1,0 +1,83 @@
+import streamlit as st
+import torch
+import numpy as np
+import pandas as pd
+import yfinance as yf
+import joblib
+
+from src.models.lstm import LSTMModel
+from src.data.preprocess import create_sequences
+
+# ---------------------------
+# Page setup
+# ---------------------------
+st.set_page_config(page_title="Stock Price Prediction (LSTM)", layout="centered")
+st.title("📈 Stock Price Prediction using LSTM (PyTorch)")
+
+# ---------------------------
+# User input
+# ---------------------------
+ticker = st.text_input("Enter stock ticker symbol:", "AAPL")
+period = st.selectbox("Select data period:", ["1y", "3y", "5y"], index=2)
+
+# ---------------------------
+# Load model & scaler (ONCE)
+# ---------------------------
+device = torch.device("cpu")
+
+@st.cache_resource
+def load_model():
+    model = LSTMModel(input_dim=6).to(device)
+    model.load_state_dict(torch.load("models/best_lstm_model.pth", map_location=device))
+    model.eval()
+    scaler_y = joblib.load("models/scaler_y.pkl")
+    return model, scaler_y
+
+model, scaler_y = load_model()
+
+# ---------------------------
+# Download data
+# ---------------------------
+df = yf.download(ticker, period=period, interval="1d")
+df = df.rename(columns={"Adj Close": "Adj_Close"})
+df["Target"] = df["Adj_Close"].shift(-1)
+df.dropna(inplace=True)
+
+FEATURES = ["Open", "High", "Low", "Close", "Adj_Close", "Volume"]
+X = df[FEATURES].values
+
+# ---------------------------
+# Create sequences
+# ---------------------------
+time_steps = 60
+X_seq, y_seq = create_sequences(X, df[["Target"]].values, time_steps)
+X_seq_t = torch.tensor(X_seq, dtype=torch.float32)
+
+# ---------------------------
+# Predict
+# ---------------------------
+with torch.no_grad():
+    y_pred_scaled = model(X_seq_t).cpu().numpy()
+
+y_pred = scaler_y.inverse_transform(y_pred_scaled)
+
+# ---------------------------
+# Display
+# ---------------------------
+st.subheader("📈 Predictions")
+pred_df = pd.DataFrame({
+    "Date": df.index[-len(y_pred):],
+    "Predicted": y_pred.flatten()
+})
+st.line_chart(pred_df.set_index("Date"))
+
+# ---------------------------
+# Next-day prediction
+# ---------------------------
+last_seq = torch.tensor(X[-time_steps:], dtype=torch.float32).unsqueeze(0)
+next_day_scaled = model(last_seq).detach().numpy()
+next_day_price = scaler_y.inverse_transform(next_day_scaled)[0][0]
+
+st.subheader("📅 Next-Day Forecast")
+st.write(f"**Predicted price:** ${next_day_price:.2f}")
+st.success("✅ Done")
