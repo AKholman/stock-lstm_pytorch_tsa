@@ -16,10 +16,6 @@ venv/
 # Jupyter
 .ipynb_checkpoints/
 
-# ML artifacts (generated locally)
-models/*.pth
-models/*.pkl
-
 # MLflow
 mlruns/
 mlflow.db
