@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+
+# Virtual environments
+stock_env/
+venv/
+.env
+
+# OS
+.DS_Store
+
+# Jupyter
+.ipynb_checkpoints/
+
+# ML artifacts (generated locally)
+models/*.pth
+models/*.pkl
+
+# MLflow
+mlruns/
+mlflow.db
+
+# Evidently outputs
+my_monitoring_data/
+
+# Data (generated)
+data/processed/
+
+# Logs
+*.log

@@ -1,0 +1,24 @@
+# Python cache
+__pycache__/
+*.pyc
+
+# Virtual env
+stock_env/
+
+# Git
+.git
+.gitignore
+
+# Notebooks & experiments
+notebook/
+
+# ML artifacts (generated at runtime)
+mlruns/
+my_monitoring_data/
+models/
+
+# Data (local)
+data/
+
+# OS
+.DS_Store
