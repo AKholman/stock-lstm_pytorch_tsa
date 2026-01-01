@@ -60,7 +60,6 @@ def scale_data(train, val, test):
 # ===============================
 def create_sequences(X, y, time_steps=60):
     Xs, ys = [], []
-
     for i in range(len(X) - time_steps):
         Xs.append(X[i:i + time_steps])
         ys.append(y[i + time_steps])
