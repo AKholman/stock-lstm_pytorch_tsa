@@ -1,14 +1,7 @@
+streamlit
 torch
 numpy
 pandas
-scikit-learn
-joblib
-
-mlflow
-evidently
-
-yfinance
-streamlit
-
 matplotlib
-seaborn
+yfinance
+scikit-learn

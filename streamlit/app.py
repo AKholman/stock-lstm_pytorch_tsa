@@ -1,3 +1,47 @@
+
+import streamlit as st
+import torch
+import yfinance as yf
+import numpy as np
+
+from src.models.lstm import LSTMModel
+
+model = LSTMModel(input_dim=6)
+model.load_state_dict(torch.load("models/best_lstm_model.pth", map_location="cpu"))
+model.eval()
+
+st.title("LSTM Stock Prediction")
+
+ticker = st.text_input("Ticker", "AAPL")
+
+if st.button("Run"):
+    data = yf.download(ticker, period="2y")["Close"].values
+    X = torch.tensor(data[-60:], dtype=torch.float32).unsqueeze(0).unsqueeze(-1)
+
+    with torch.no_grad():
+        pred = model(X)
+
+    st.write("Prediction:", pred.item())
+
+
+
+
+if st.button("Run"):
+    data = yf.download(ticker, period="2y")["Close"].values
+
+    if len(data) < 60:
+        st.error("Not enough data")
+        st.stop()
+
+    X = torch.tensor(data[-60:], dtype=torch.float32).unsqueeze(0).unsqueeze(-1)
+
+    with torch.no_grad():
+        pred = model(X)
+
+    st.write("Prediction:", pred.item())
+
+
+'''
 import os, sys
 import streamlit as st
 import torch, joblib, yfinance as yf, pandas as pd
@@ -69,3 +113,5 @@ next_day_price = scaler_y.inverse_transform(next_day_scaled)[0][0]
 st.subheader("📅 Next-Day Forecast")
 st.write(f"**Predicted price:** ${next_day_price:.2f}")
 st.success("✅ Done")
+
+'''
